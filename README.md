@@ -2,8 +2,10 @@
 
 ## 👩‍💻 About Me :
 I received my Bachelor’s degree in Computer Engineering from Karabuk University. I'm currently pursuing a master’s degree in the Department of Artificial Intelligence Engineering, Institute of Science, Karabuk University. <br/>
-🛠 I’m currently working on Quantum Computing, Quantum Artificial Intelligence.    
-🌱 I’m currently learning Node.js and React.  
+<list>
+<ul>I’m currently working on Quantum Computing, Quantum Artificial Intelligence.    
+<ul></ul>I’m currently learning Node.js and React.  
+</list>
 ---
 
 ## 🧰 Tech Stack:
