@@ -2,9 +2,11 @@
 
 ## 👩‍💻 About Me :
 I received my Bachelor’s degree in Computer Engineering from Karabuk University. I'm currently pursuing a master’s degree in the Department of Artificial Intelligence Engineering, Institute of Science, Karabuk University. <br/>
-<list>
-<ul>I’m currently working on Quantum Computing, Quantum Artificial Intelligence.    
-<ul></ul>I’m currently learning Node.js and React.  
+<list>   
+<ul>
+  <li>I’m currently working on Quantum Computing, Quantum Artificial Intelligence.</li> 
+  <li>I’m currently learning Node.js and React.</li>
+</ul> 
 </list>
 ---
 
@@ -15,7 +17,6 @@ I received my Bachelor’s degree in Computer Engineering from Karabuk Universit
 ![HTML](https://img.shields.io/badge/-HTML5-05122A?style=flat&logo=html5)
 ![CSS](https://img.shields.io/badge/-CSS3-05122A?style=flat&logo=css3)
 ![JavaScript](https://img.shields.io/badge/-JavaScript-05122A?style=flat&logo=javascript)
-![Go](https://img.shields.io/badge/-Go-05122A?style=flat&logo=go)
 
 
 **Tools & Platforms:**  
