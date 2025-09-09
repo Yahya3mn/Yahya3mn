@@ -1,9 +1,9 @@
 # Hi there, I'm Yahya 👋
 
 ## 👩‍💻 About Me :
-
-🛠 I’m currently working on quantum computing.    
-🌱 I’m currently learning Go, Node.js, and React.  
+I received my Bachelor’s degree in Computer Engineering from Karabuk University. I'm currently pursuing a master’s degree in the Department of Artificial Intelligence Engineering, Institute of Science, Karabuk University
+🛠 I’m currently working on Quantum Computing, Quantum Artificial Intelligence.    
+🌱 I’m currently learning Node.js and React.  
 ---
 
 ## 🧰 Tech Stack:
@@ -42,5 +42,4 @@
 ## 📫 Contact Me
 
 - 📧 Email: yahyazakryakhan@gmail.com
-- 💼 [LinkedIn]()  
-- 🧑‍💻 [GitHub](https://github.com/Yahya3mn)
+- 💼 [LinkedIn](https://www.linkedin.com/in/yahya-zakrya-khan-92152a1b8/)  
