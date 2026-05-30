@@ -5,7 +5,6 @@ I received my Bachelor’s degree in Computer Engineering from Karabuk Universit
 <list>   
 <ul>
   <li>I’m currently working on Quantum Computing, Quantum Artificial Intelligence.</li> 
-  <li>I’m currently learning Node.js and React.</li>
 </ul> 
 </list>
 ---
