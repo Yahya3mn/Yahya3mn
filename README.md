@@ -3,7 +3,7 @@
 <!-- 3D ascii wordmark: extruded "YAHYA" that wipes in, then rocks on its
      vertical axis. regenerate with: python scripts/make_wordmark_svg.py -->
 
-<h3><code>yahya@github ~ $ whoami</code></h3>
+<h3>Who am I</h3>
 <img src="./wordmark.svg" width="560" alt="YAHYA — 3D ASCII wordmark" />
 
 <p><b>AI Engineering MSc @ Karabuk University</b> · BSc Computer Engineering · Quantum Computing / Quantum AI</p>
@@ -13,12 +13,12 @@
 <!-- animated contribution graph: real data, boxes pop in cell by cell
      (regenerated daily by .github/workflows/update-profile-art.yml) -->
 
-<h3><code>yahya@github ~ $ ./contributions.sh</code></h3>
+<h3>Contributions</h3>
 <img src="./contrib-heatmap.svg" width="780" alt="Yahya's GitHub contribution graph — auto-refreshed daily" />
 
 <br><br>
 
-<h3><code>yahya@github ~ $ ./links.sh</code></h3>
+<h3>Links</h3>
 
 ![Python](https://img.shields.io/badge/-Python-05122A?style=flat&logo=python)
 ![C](https://img.shields.io/badge/-C-05122A?style=flat&logo=c)
