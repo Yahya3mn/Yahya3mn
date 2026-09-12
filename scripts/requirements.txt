@@ -1,2 +1,5 @@
 requests>=2.31.0
 beautifulsoup4==4.12.3
+# wordmark/portrait only (not needed by the daily heatmap workflow):
+Pillow>=10.0.0
+numpy>=1.26.0
