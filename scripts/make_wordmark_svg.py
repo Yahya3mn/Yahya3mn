@@ -69,14 +69,16 @@ FOG = 0.34             # how much the far end of the word dims, 0..1
 FOG_SPAN = 0.55        # world-units of depth the fog ramp covers
 
 # ---- palette (matches the rest of the profile) ----------------------------
-BG = "#0a0e14"
-BG2 = "#0d1420"
-FRAME = "#1f6feb"
-TITLE_TEXT = "#7d8590"
-INK = "#e6edf3"
+BG = "#0a0b14"
+BG2 = "#141327"
+ACCENT_1 = "#8b5cf6"   # violet
+ACCENT_2 = "#22d3ee"   # cyan
+TITLE_TEXT = "#8b93a7"
+INK = "#e7e9f3"
 
 PAD = 18
-TITLEBAR_H = 28
+TITLEBAR_H = 30
+RADIUS = 16
 
 
 # ---------------------------------------------------------------- voxel shell
@@ -230,18 +232,26 @@ def emit(frames, mode, out, dur, reveal, title_text):
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{canvas_w:.0f}" height="{canvas_h:.0f}" '
         f'viewBox="0 0 {canvas_w:.0f} {canvas_h:.0f}" font-family="ui-monospace, SFMono-Regular, '
         f'Menlo, Consolas, monospace">',
-        '<defs><linearGradient id="wbg" x1="0" y1="0" x2="0" y2="1">'
+        '<defs>',
+        f'<linearGradient id="wbg" x1="0" y1="0" x2="0.3" y2="1">'
         f'<stop offset="0" stop-color="{BG2}"/><stop offset="1" stop-color="{BG}"/>'
-        '</linearGradient></defs>',
-        f'<rect width="{canvas_w:.0f}" height="{canvas_h:.0f}" rx="12" fill="url(#wbg)"/>',
-        f'<rect x="0.5" y="0.5" width="{canvas_w-1:.0f}" height="{canvas_h-1:.0f}" rx="12" '
-        f'fill="none" stroke="{FRAME}" stroke-width="1" stroke-opacity="0.55"/>',
-        f'<line x1="0" y1="{TITLEBAR_H}" x2="{canvas_w:.0f}" y2="{TITLEBAR_H}" stroke="{FRAME}" stroke-opacity="0.35"/>',
+        '</linearGradient>',
+        f'<linearGradient id="wborder" x1="0" y1="0" x2="1" y2="1">'
+        f'<stop offset="0" stop-color="{ACCENT_1}"/><stop offset="1" stop-color="{ACCENT_2}"/></linearGradient>',
+        f'<linearGradient id="wsheen" x1="0" y1="0" x2="0" y2="1">'
+        f'<stop offset="0" stop-color="#ffffff" stop-opacity="0.07"/>'
+        f'<stop offset="1" stop-color="#ffffff" stop-opacity="0"/></linearGradient>',
+        '</defs>',
+        f'<rect width="{canvas_w:.0f}" height="{canvas_h:.0f}" rx="{RADIUS}" fill="url(#wbg)"/>',
+        f'<rect width="{canvas_w:.0f}" height="{canvas_h * 0.4:.0f}" rx="{RADIUS}" fill="url(#wsheen)"/>',
+        f'<rect x="0.75" y="0.75" width="{canvas_w-1.5:.0f}" height="{canvas_h-1.5:.0f}" rx="{RADIUS}" '
+        f'fill="none" stroke="url(#wborder)" stroke-width="1.25" stroke-opacity="0.55"/>',
+        f'<line x1="0" y1="{TITLEBAR_H}" x2="{canvas_w:.0f}" y2="{TITLEBAR_H}" stroke="url(#wborder)" stroke-opacity="0.25"/>',
     ]
     for i, dot in enumerate(["#ff5f56", "#ffbd2e", "#27c93f"]):
         p.append(f'<circle cx="{PAD + i*15}" cy="{TITLEBAR_H/2}" r="4.5" fill="{dot}"/>')
     p.append(f'<text x="{canvas_w/2:.0f}" y="{TITLEBAR_H/2 + 4:.0f}" fill="{TITLE_TEXT}" '
-             f'font-size="11.5" text-anchor="middle">{html.escape(title_text)}</text>')
+             f'font-size="11.5" letter-spacing="0.3" text-anchor="middle">{html.escape(title_text)}</text>')
 
     def frame_g(rows, extra=""):
         out_rows = []

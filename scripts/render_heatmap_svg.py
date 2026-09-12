@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """
-Render data/contributions.json (produced by fetch_contributions.py) as a proper
-GitHub-style contribution heatmap SVG: a grid of rounded, colored BOXES in the
-classic 53-week x 7-day calendar, inside a bordered terminal-window card
-(gradient background, traffic-light dots, titlebar command). Each box pops in
-with a scale-bounce + brightness-flash once (diagonal stagger), then freezes --
-no looping "glow". Includes a Less->More legend and a real two-line stats
-footer, plus prefers-reduced-motion support.
+Render data/contributions.json (produced by fetch_contributions.py) as a
+modern glass-style GitHub contribution heatmap SVG: a grid of rounded,
+colored BOXES in the classic 53-week x 7-day calendar, inside a rounded
+terminal card with a gradient background, a violet->cyan gradient border,
+and a soft glass sheen. Each box pops in with a scale-bounce +
+brightness-flash once (diagonal stagger), then freezes -- no looping
+"glow". Includes a Less->More legend and a two-line stats footer with
+small icon glyphs, plus prefers-reduced-motion support.
 
 Run by .github/workflows/update-profile-art.yml after fetch_contributions.py.
 """
@@ -18,8 +19,9 @@ HERE = os.path.dirname(__file__)
 IN_PATH = os.path.join(HERE, "..", "data", "contributions.json")
 OUT_PATH = os.path.join(HERE, "..", "contrib-heatmap.svg")
 
-# GitHub-ish green ramp: empty -> brightest. Level 5 is a brighter neon top end.
-PALETTE = ["#161b22", "#0e4429", "#006d32", "#26a641", "#39d353", "#69f0a0"]
+# GitHub-ish green ramp: empty -> brightest. Level 0 is tinted to match the
+# new indigo card background instead of GitHub's neutral gray.
+PALETTE = ["#1b2036", "#0e4429", "#00743a", "#26a641", "#39d353", "#6bf5a8"]
 
 CELL = 12
 GAP = 3
@@ -27,21 +29,29 @@ STEP = CELL + GAP
 PAD = 22
 LEFT_LABEL_W = 30
 TOP_LABEL_H = 20
-TITLEBAR_H = 30
+TITLEBAR_H = 32
+RADIUS = 16
 
-BG = "#0a0e14"
-BG2 = "#0d1420"
-FRAME = "#1f6feb"
-MUTED = "#7d8590"
-TEXT = "#e6edf3"
-ACCENT = "#22d3ee"
+# modern palette: deep indigo glass card, violet -> cyan accent gradient
+BG_TOP = "#141327"
+BG_BOTTOM = "#0a0b14"
+ACCENT_1 = "#8b5cf6"   # violet
+ACCENT_2 = "#22d3ee"   # cyan
+MUTED = "#8b93a7"
+TEXT = "#e7e9f3"
 GREEN = "#39d353"
-GOLD = "#f2cc60"
+GOLD = "#f2c94c"
 
 # reveal timing (one-shot)
 COL_T = 0.018   # per-column delay contribution (left -> right sweep)
 ROW_T = 0.045   # per-row delay contribution (top -> bottom cascade)
 CELL_DUR = 0.55
+
+# monospace advance width as a fraction of font-size -- lets right-aligned
+# text be positioned by character count instead of text-anchor="end", which
+# some SVG renderers mishandle once a <tspan> with different styling sits
+# inside the string.
+MONO_ADVANCE = 0.6
 
 
 def level_for(count):
@@ -79,6 +89,26 @@ def build_grid(days):
     return grid
 
 
+def right_text(x_end, y, s, size, color, weight="400"):
+    """Right-align plain text at x_end by measured char width, sidestepping
+    text-anchor="end" (which some renderers mishandle with mixed tspans)."""
+    w = len(s) * size * MONO_ADVANCE
+    return (f'<text x="{x_end - w:.1f}" y="{y}" font-size="{size}" fill="{color}" '
+            f'font-weight="{weight}">{s}</text>')
+
+
+def flame_icon(x, y, color):
+    return (f'<path transform="translate({x},{y}) scale(0.62)" fill="{color}" '
+            f'd="M8 0c1 2.5-2.2 3.6-2.2 6.4C5.8 8.9 7.6 10 8.4 10c-0.8-1.6 0.2-2.7 0.8-3.6 '
+            f'0.5 1 0.3 1.9 0.9 2.6 1.6-1 2.3-2.9 1.6-4.8 1.8 1 2.9 3 2.5 5.1-0.5 2.7-3 4.7-5.9 4.7 '
+            f'-3.3 0-6-2.6-6-5.8C2.3 4.9 5.6 2.9 8 0z"/>')
+
+
+def star_icon(x, y, color):
+    pts = "5,0 6.5,3.4 10,3.8 7.3,6.1 8.1,9.5 5,7.6 1.9,9.5 2.7,6.1 0,3.8 3.5,3.4"
+    return f'<polygon transform="translate({x},{y}) scale(0.62)" fill="{color}" points="{pts}"/>'
+
+
 def render(data):
     days = data["days"]
     grid = build_grid(days)
@@ -100,7 +130,7 @@ def render(data):
             break
 
     canvas_w = PAD + LEFT_LABEL_W + art_w + PAD
-    stats_h = 88
+    stats_h = 92
     canvas_h = TITLEBAR_H + TOP_LABEL_H + art_h + stats_h + PAD
 
     css = f"""
@@ -114,13 +144,15 @@ def render(data):
   45%  {{ filter: brightness(2.6); }}
   100% {{ filter: brightness(1); }}
 }}
+@keyframes fade {{ from {{ opacity: 0; }} to {{ opacity: 1; }} }}
 .c {{
   opacity: 0; transform-box: fill-box; transform-origin: center;
   animation: pop {CELL_DUR:.2f}s cubic-bezier(.2,.8,.2,1) both;
 }}
 .g {{ animation: pop {CELL_DUR:.2f}s cubic-bezier(.2,.8,.2,1) both, flash {CELL_DUR + 0.15:.2f}s ease-out both; }}
+.footer {{ opacity: 0; animation: fade 0.6s ease-out {0.9:.2f}s both; }}
 @media (prefers-reduced-motion: reduce) {{
-  .c {{ opacity: 1 !important; animation: none !important; }}
+  .c, .footer {{ opacity: 1 !important; animation: none !important; }}
 }}
 """.strip()
 
@@ -128,26 +160,32 @@ def render(data):
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{canvas_w}" height="{canvas_h}" '
         f'viewBox="0 0 {canvas_w} {canvas_h}" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">',
         f'<style>{css}</style>',
-        '<defs>'
-        f'<linearGradient id="hbg" x1="0" y1="0" x2="0" y2="1">'
-        f'<stop offset="0" stop-color="{BG2}"/><stop offset="1" stop-color="{BG}"/></linearGradient>'
+        '<defs>',
+        f'<linearGradient id="hbg" x1="0" y1="0" x2="0.3" y2="1">'
+        f'<stop offset="0" stop-color="{BG_TOP}"/><stop offset="1" stop-color="{BG_BOTTOM}"/></linearGradient>',
+        f'<linearGradient id="border" x1="0" y1="0" x2="1" y2="1">'
+        f'<stop offset="0" stop-color="{ACCENT_1}"/><stop offset="1" stop-color="{ACCENT_2}"/></linearGradient>',
+        f'<linearGradient id="sheen" x1="0" y1="0" x2="0" y2="1">'
+        f'<stop offset="0" stop-color="#ffffff" stop-opacity="0.07"/>'
+        f'<stop offset="1" stop-color="#ffffff" stop-opacity="0"/></linearGradient>',
         '</defs>',
-        f'<rect width="{canvas_w}" height="{canvas_h}" rx="12" fill="url(#hbg)"/>',
-        f'<rect x="0.5" y="0.5" width="{canvas_w-1}" height="{canvas_h-1}" rx="12" '
-        f'fill="none" stroke="{FRAME}" stroke-width="1" stroke-opacity="0.55"/>',
-        f'<line x1="0" y1="{TITLEBAR_H}" x2="{canvas_w}" y2="{TITLEBAR_H}" stroke="{FRAME}" stroke-opacity="0.35"/>',
+        f'<rect width="{canvas_w}" height="{canvas_h}" rx="{RADIUS}" fill="url(#hbg)"/>',
+        f'<rect width="{canvas_w}" height="{canvas_h * 0.4:.0f}" rx="{RADIUS}" fill="url(#sheen)"/>',
+        f'<rect x="0.75" y="0.75" width="{canvas_w-1.5}" height="{canvas_h-1.5}" rx="{RADIUS}" '
+        f'fill="none" stroke="url(#border)" stroke-width="1.25" stroke-opacity="0.55"/>',
+        f'<line x1="0" y1="{TITLEBAR_H}" x2="{canvas_w}" y2="{TITLEBAR_H}" stroke="url(#border)" stroke-opacity="0.25"/>',
     ]
     for i, dotcol in enumerate(["#ff5f56", "#ffbd2e", "#27c93f"]):
         parts.append(f'<circle cx="{PAD + i*16}" cy="{TITLEBAR_H/2}" r="5" fill="{dotcol}"/>')
     parts.append(f'<text x="{canvas_w/2}" y="{TITLEBAR_H/2 + 4}" fill="{MUTED}" font-size="12" '
-                 f'text-anchor="middle">yahya@github: ~/contributions --graph</text>')
+                 f'letter-spacing="0.3" text-anchor="middle">yahya@github: ~/contributions --graph</text>')
 
     grid_top = TITLEBAR_H + TOP_LABEL_H
     grid_left = PAD + LEFT_LABEL_W
 
     for ci, label in month_labels:
         x = grid_left + ci * STEP
-        parts.append(f'<text x="{x}" y="{TITLEBAR_H + 14}" fill="{MUTED}" font-size="10">{label}</text>')
+        parts.append(f'<text x="{x}" y="{TITLEBAR_H + 15}" fill="{MUTED}" font-size="10">{label}</text>')
 
     for wi, wname in [(1, "Mon"), (3, "Wed"), (5, "Fri")]:
         y = grid_top + wi * STEP + CELL * 0.78
@@ -165,23 +203,24 @@ def render(data):
             plural = "s" if count != 1 else ""
             cls = "c g" if lvl >= 1 else "c"
             parts.append(
-                f'<rect class="{cls}" x="{gx}" y="{gy}" width="{CELL}" height="{CELL}" rx="2.5" '
+                f'<rect class="{cls}" x="{gx}" y="{gy}" width="{CELL}" height="{CELL}" rx="3" '
                 f'fill="{PALETTE[lvl]}" style="animation-delay:{delay:.3f}s">'
                 f'<title>{date_s}: {count} contribution{plural}</title></rect>'
             )
 
     # legend: Less [][][][][] More (bottom-right of the grid)
     leg_y = grid_top + art_h + 6
-    leg_x = canvas_w - PAD - (len(PALETTE) * (CELL - 1) + 70)
-    parts.append(f'<text x="{leg_x}" y="{leg_y + CELL*0.8:.1f}" fill="{MUTED}" font-size="10" text-anchor="end">Less</text>')
-    lx = leg_x + 8
+    leg_w_est = len(PALETTE) * CELL + 70
+    leg_x = canvas_w - PAD - leg_w_est
+    parts.append(right_text(leg_x + 30, leg_y + CELL * 0.8, "Less", 10, MUTED))
+    lx = leg_x + 36
     for lvl, color in enumerate(PALETTE):
-        parts.append(f'<rect x="{lx}" y="{leg_y}" width="{CELL-1}" height="{CELL-1}" rx="2.2" fill="{color}"/>')
+        parts.append(f'<rect x="{lx}" y="{leg_y}" width="{CELL-1}" height="{CELL-1}" rx="2.5" fill="{color}"/>')
         lx += CELL
     parts.append(f'<text x="{lx + 4}" y="{leg_y + CELL*0.8:.1f}" fill="{MUTED}" font-size="10">More</text>')
 
     sep_y = leg_y + CELL + 14
-    parts.append(f'<line x1="0" y1="{sep_y}" x2="{canvas_w}" y2="{sep_y}" stroke="{FRAME}" stroke-opacity="0.25"/>')
+    parts.append(f'<line x1="0" y1="{sep_y}" x2="{canvas_w}" y2="{sep_y}" stroke="url(#border)" stroke-opacity="0.2"/>')
 
     cs = data["current_streak"]["length"]
     ls = data["longest_streak"]["length"]
@@ -189,19 +228,23 @@ def render(data):
     best = data["best_day"]
     rng = data["range"]
 
-    ly = sep_y + 24
-    parts.append(f'<text x="{PAD}" y="{ly}" font-size="13" fill="{GREEN}">'
+    ly = sep_y + 26
+    parts.append(f'<g class="footer">')
+    parts.append(f'<text x="{PAD}" y="{ly}" font-size="14" fill="{GREEN}">'
                  f'<tspan font-weight="700">{total:,}</tspan>'
                  f'<tspan fill="{MUTED}"> contributions in the last year</tspan></text>')
-    parts.append(f'<text x="{canvas_w - PAD}" y="{ly}" font-size="12" fill="{MUTED}" text-anchor="end">'
-                 f'{rng["start"]} &#8594; {rng["end"]}</text>')
-    ly += 24
-    parts.append(f'<text x="{PAD}" y="{ly}" font-size="13" fill="{MUTED}">current streak '
-                 f'<tspan fill="{ACCENT}" font-weight="700">{cs} days</tspan>'
-                 f'<tspan fill="{MUTED}">   &#183;   longest </tspan>'
-                 f'<tspan fill="{ACCENT}" font-weight="700">{ls} days</tspan></text>')
-    parts.append(f'<text x="{canvas_w - PAD}" y="{ly}" font-size="12" fill="{MUTED}" text-anchor="end">'
-                 f'best day <tspan fill="{GOLD}" font-weight="700">{best["count"]}</tspan> on {best["date"]}</text>')
+    parts.append(right_text(canvas_w - PAD, ly, f'{rng["start"]} → {rng["end"]}', 12, MUTED))
+    ly += 26
+    parts.append(flame_icon(PAD, ly - 10, ACCENT_2))
+    parts.append(f'<text x="{PAD + 16}" y="{ly}" font-size="13" fill="{MUTED}">streak '
+                 f'<tspan fill="{ACCENT_2}" font-weight="700">{cs}d</tspan>'
+                 f'<tspan fill="{MUTED}"> current &#183; </tspan>'
+                 f'<tspan fill="{ACCENT_1}" font-weight="700">{ls}d</tspan>'
+                 f'<tspan fill="{MUTED}"> best</tspan></text>')
+    best_str = f'best day {best["count"]} on {best["date"]}'
+    parts.append(right_text(canvas_w - PAD - 16, ly, best_str, 12, MUTED))
+    parts.append(star_icon(canvas_w - PAD - 12, ly - 9, GOLD))
+    parts.append('</g>')
 
     parts.append("</svg>")
     return "".join(parts)
