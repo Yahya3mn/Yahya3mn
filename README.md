@@ -20,6 +20,13 @@
 <h3>Contributions</h3>
 <img src="./contrib-heatmap.svg" width="780" alt="Yahya's GitHub contribution graph — auto-refreshed daily" />
 
+<br>
+
+<!-- monthly bar chart + activity ring, same data source as the heatmap.
+     regenerate with: python scripts/render_contrib_stats_svg.py -->
+
+<img src="./contrib-stats.svg" width="780" alt="Monthly contribution activity and active-day ratio" />
+
 <br><br>
 
 <h3>Links</h3>
