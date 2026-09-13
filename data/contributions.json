@@ -1,13 +1,13 @@
 {
   "username": "Yahya3mn",
-  "generated_at": "2026-09-12T14:46:59Z",
+  "generated_at": "2026-09-13T11:58:58Z",
   "range": {
-    "start": "2025-09-07",
-    "end": "2026-09-12"
+    "start": "2025-09-14",
+    "end": "2026-09-13"
   },
-  "total_contributions": 37,
-  "active_days": 9,
-  "avg_per_active_day": 4.1,
+  "total_contributions": 31,
+  "active_days": 8,
+  "avg_per_active_day": 3.9,
   "current_streak": {
     "length": 1,
     "start": "2026-09-12",
@@ -20,12 +20,12 @@
   },
   "best_day": {
     "date": "2026-09-12",
-    "count": 11
+    "count": 12
   },
   "monthly": [
     {
       "month": "2025-09",
-      "total": 7
+      "total": 0
     },
     {
       "month": "2025-10",
@@ -73,38 +73,10 @@
     },
     {
       "month": "2026-09",
-      "total": 11
+      "total": 12
     }
   ],
   "days": [
-    {
-      "date": "2025-09-07",
-      "count": 0
-    },
-    {
-      "date": "2025-09-08",
-      "count": 0
-    },
-    {
-      "date": "2025-09-09",
-      "count": 7
-    },
-    {
-      "date": "2025-09-10",
-      "count": 0
-    },
-    {
-      "date": "2025-09-11",
-      "count": 0
-    },
-    {
-      "date": "2025-09-12",
-      "count": 0
-    },
-    {
-      "date": "2025-09-13",
-      "count": 0
-    },
     {
       "date": "2025-09-14",
       "count": 0
@@ -1559,7 +1531,11 @@
     },
     {
       "date": "2026-09-12",
-      "count": 11
+      "count": 12
+    },
+    {
+      "date": "2026-09-13",
+      "count": 0
     }
   ]
 }
