@@ -35,9 +35,9 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 # ---- geometry / grid ------------------------------------------------------
 COLS = int(os.environ.get("WORDMARK_COLS", 58))
 ROWS = 0               # derived from the art -- see fit()
-# blank rows above and below the art, so the panel roughly matches a 370-wide
-# portrait's height when the two sit side by side.
-ROW_MARGIN = int(os.environ.get("WORDMARK_ROW_MARGIN", 4))
+# blank rows above and below the art. kept small: the wordmark is the
+# full-width hero banner at the top of the README.
+ROW_MARGIN = int(os.environ.get("WORDMARK_ROW_MARGIN", 1))
 CELL_W = 9.0
 CELL_H = 15.5
 # DejaVu Sans Bold: bundled in scripts/fonts/ so the render is identical

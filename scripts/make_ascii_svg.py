@@ -4,12 +4,13 @@ portrait that types itself in, as an SVG GitHub will animate (SMIL only, no JS).
 
 Each pixel of the downsampled grid picks a glyph from a density ramp: sparse
 for bright, dense for dark, with a leading space so the white backdrop prints
-as nothing. One light ink color -- per-character color is what makes most
-ASCII portraits read as static.
+as nothing. Color is one smooth violet -> cyan gradient over the whole art,
+never per character -- per-character color is what makes most ASCII
+portraits read as static. A soft glow and faint scanlines give it a CRT feel.
 
 Animation: every row sits behind its own clip that wipes left -> right with a
-block cursor riding the edge, staggered top to bottom. It prints once and
-freezes; nothing loops.
+block cursor riding the edge, staggered top to bottom. Once printed, a light
+band sweeps across the glyphs every few seconds; nothing else moves.
 
 Env overrides: PORTRAIT_SRC, PORTRAIT_COLS, PORTRAIT_GAMMA, PORTRAIT_INVERT=1
 (bright -> dense instead), STATIC=1 (frozen final frame, for local previews).
@@ -46,9 +47,14 @@ ACCENT_1 = "#8b5cf6"
 ACCENT_2 = "#22d3ee"
 TITLE_TEXT = "#8b93a7"
 INK = "#e7e9f3"
+# glyph gradient, top-left -> bottom-right: lighter tints of the two accents so
+# thin characters stay readable on the dark card
+INK_STOPS = [(0.0, "#c4b5fd"), (0.5, "#a5b4fc"), (1.0, "#67e8f9")]
 
 ROW_DUR = 0.45           # seconds for one row's wipe
 ROW_STAGGER = 0.055      # delay between consecutive rows
+SWEEP_EVERY = 7.0        # seconds between shimmer passes once printed
+SWEEP_DUR = 1.6          # seconds one pass takes
 
 
 def to_ascii(src):
@@ -88,14 +94,33 @@ def emit(lines, out, title_text):
         f'<linearGradient id="psheen" x1="0" y1="0" x2="0" y2="1">'
         f'<stop offset="0" stop-color="#ffffff" stop-opacity="0.07"/>'
         f'<stop offset="1" stop-color="#ffffff" stop-opacity="0"/></linearGradient>',
+        f'<linearGradient id="pink" gradientUnits="userSpaceOnUse" x1="{PAD}" y1="{art_top:.0f}" '
+        f'x2="{PAD + art_w:.0f}" y2="{art_top + art_h:.0f}">'
+        + "".join(f'<stop offset="{o}" stop-color="{c}"/>' for o, c in INK_STOPS)
+        + '</linearGradient>',
+        '<linearGradient id="psweep" x1="0" y1="0" x2="1" y2="0">'
+        '<stop offset="0" stop-color="#ffffff" stop-opacity="0"/>'
+        '<stop offset="0.5" stop-color="#ffffff" stop-opacity="0.9"/>'
+        '<stop offset="1" stop-color="#ffffff" stop-opacity="0"/></linearGradient>',
+        '<filter id="pglow" x="-5%" y="-5%" width="110%" height="110%">'
+        '<feGaussianBlur stdDeviation="2.4" result="b"/>'
+        '<feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>',
+        '<pattern id="pscan" width="4" height="3" patternUnits="userSpaceOnUse">'
+        '<rect width="4" height="1" fill="#000000" opacity="0.28"/></pattern>',
     ]
-    rows = []                                  # (y, x, body, row index)
+    rows = []                                  # (row index, leading blanks, glyphs)
     for ry, line in enumerate(lines):
         s = line.rstrip()
         if not s.strip():
             continue
         lead = len(s) - len(s.lstrip(" "))
         rows.append((ry, lead, s[lead:]))
+
+    def row_text(ry, lead, body, extra=""):
+        x = PAD + lead * CELL_W
+        y = art_top + ry * CELL_H + CELL_H * 0.78
+        return (f'<text xml:space="preserve" x="{x:.1f}" y="{y:.1f}" font-size="{fs:.1f}" '
+                f'textLength="{len(body)*CELL_W:.1f}" lengthAdjust="spacing"{extra}>{html.escape(body)}</text>')
 
     if not STATIC:
         # one clip per row; the wipe runs across the full art width so every
@@ -106,6 +131,8 @@ def emit(lines, out, title_text):
             p.append(f'<clipPath id="r{ry}"><rect x="{PAD}" y="{y:.1f}" height="{CELL_H:.1f}" width="0">'
                      f'<animate attributeName="width" from="0" to="{art_w:.0f}" begin="{begin:.3f}s" '
                      f'dur="{ROW_DUR:.2f}s" fill="freeze"/></rect></clipPath>')
+        # every glyph as one clip, so the shimmer band only lights the characters
+        p.append('<clipPath id="pglyphs">' + "".join(row_text(*r) for r in rows) + '</clipPath>')
     p.append('</defs>')
 
     p += [
@@ -120,16 +147,26 @@ def emit(lines, out, title_text):
     p.append(f'<text x="{canvas_w/2:.0f}" y="{TITLEBAR_H/2 + 4:.0f}" fill="{TITLE_TEXT}" '
              f'font-size="11.5" letter-spacing="0.3" text-anchor="middle">{html.escape(title_text)}</text>')
 
-    p.append(f'<g fill="{INK}">')
+    p.append('<g fill="url(#pink)" filter="url(#pglow)">')
     for ry, lead, body in rows:
-        x = PAD + lead * CELL_W
-        y = art_top + ry * CELL_H + CELL_H * 0.78
         clip = "" if STATIC else f' clip-path="url(#r{ry})"'
-        p.append(f'<text xml:space="preserve" x="{x:.1f}" y="{y:.1f}" font-size="{fs:.1f}" '
-                 f'textLength="{len(body)*CELL_W:.1f}" lengthAdjust="spacing"{clip}>{html.escape(body)}</text>')
+        p.append(row_text(ry, lead, body, clip))
     p.append('</g>')
+    p.append(f'<rect x="{PAD}" y="{art_top:.1f}" width="{art_w:.0f}" height="{art_h:.1f}" fill="url(#pscan)"/>')
 
     if not STATIC:
+        # shimmer: a soft band crosses the glyphs once every SWEEP_EVERY seconds,
+        # starting after the last row has printed
+        printed = rows[-1][0] * ROW_STAGGER + ROW_DUR if rows else 0
+        band = art_w * 0.3
+        k = SWEEP_DUR / SWEEP_EVERY
+        p.append(f'<g clip-path="url(#pglyphs)"><rect x="{PAD - band:.0f}" y="{art_top:.1f}" '
+                 f'width="{band:.0f}" height="{art_h:.1f}" fill="url(#psweep)" opacity="0.55">'
+                 f'<animate attributeName="x" values="{PAD - band:.0f};{PAD + art_w:.0f};{PAD + art_w:.0f}" '
+                 f'keyTimes="0;{k:.3f};1" dur="{SWEEP_EVERY:.1f}s" begin="{printed + 0.4:.2f}s" '
+                 f'repeatCount="indefinite"/></rect></g>')
+
+
         # block cursor riding each row's wipe edge, hidden before and after
         for ry, _, _ in rows:
             begin = ry * ROW_STAGGER
