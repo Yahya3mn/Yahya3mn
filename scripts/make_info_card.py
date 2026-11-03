@@ -10,8 +10,10 @@ Each line fades and slides in on a short stagger, as if neofetch were printing
 next to the portrait, then a prompt cursor blinks under it. STATIC=1 emits the
 final frame with no animation, for local previews.
 
-The card's height is matched to yahya-ascii.svg so the two line up when the
-README shows them at PORTRAIT_DISPLAY_W / CARD_DISPLAY_W px.
+The README places the portrait and this card as two adjacent <img>s (no
+table: its borders and padding push past the 780px column). So the card's
+height is matched to yahya-ascii.svg at the README's display widths, and the
+gap between the two is transparent margin on the card's left edge.
 """
 import datetime
 import html
@@ -25,9 +27,10 @@ PORTRAIT_PATH = os.path.join(HERE, "..", "yahya-ascii.svg")
 OUT_PATH = os.path.join(HERE, "..", "info-card.svg")
 STATIC = os.environ.get("STATIC") == "1"
 
-# keep these in sync with the <img width> values in README.md
-PORTRAIT_DISPLAY_W = 350
-CARD_DISPLAY_W = 378
+# keep these in sync with the <img width> values in README.md (they sum to 780)
+PORTRAIT_DISPLAY_W = 380
+CARD_DISPLAY_W = 400
+GAP_DISPLAY_W = 12     # part of CARD_DISPLAY_W: the gap after the portrait
 
 W = 500
 PAD = 26
@@ -89,21 +92,24 @@ def live_rows(data):
     return rows
 
 
-def card_height():
-    """Height that lines up with the portrait at the README's display widths."""
+def card_geometry():
+    """(left margin, height) in card units, so the card lines up with the portrait."""
+    scale = (CARD_DISPLAY_W - GAP_DISPLAY_W) / W        # display px per card unit
     try:
         with open(PORTRAIT_PATH) as fh:
             m = re.search(r'width="(\d+)" height="(\d+)"', fh.read(400))
         pw, ph = int(m.group(1)), int(m.group(2))
-        return round(ph / pw * PORTRAIT_DISPLAY_W / CARD_DISPLAY_W * W)
+        h = round(ph / pw * PORTRAIT_DISPLAY_W / scale)
     except (OSError, AttributeError):
-        return 460
+        h = 490
+    return GAP_DISPLAY_W / scale, h
 
 
 def render(data):
-    H = card_height()
+    margin, H = card_geometry()
     p = [
-        f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}" '
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="{W + margin:.1f}" height="{H}" '
+        f'viewBox="{-margin:.2f} 0 {W + margin:.2f} {H}" '
         f'font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="{FONT}">',
         '<defs>',
         f'<linearGradient id="ibg" x1="0" y1="0" x2="0.3" y2="1">'

@@ -3,6 +3,10 @@ Render the README's section headers as terminal prompts that type their
 command out character by character, then park a blinking cursor -- the same
 card language as the other SVGs, sized to the 780px column.
 
+Each prompt carries its own vertical spacing as transparent margin (MARGIN_TOP
+above the bar, MARGIN_BOTTOM below), since GitHub strips the CSS that would
+otherwise space README elements -- the README just joins everything with <br>.
+
 Static content, so this only needs re-running when a command below changes:
     python scripts/make_prompt_svg.py      # writes prompts/<name>.svg
 """
@@ -23,7 +27,9 @@ PROMPTS = {
 }
 
 W = 780
-H = 44
+H = 44                 # the bar itself
+MARGIN_TOP = 24        # gap to the section above
+MARGIN_BOTTOM = 6      # gap to this section's content
 RADIUS = 12
 FONT = 15
 CW = FONT * 0.6        # monospace advance; textLength pins every glyph to it
@@ -47,8 +53,9 @@ def seg(x, s, color, weight="400"):
 
 
 def render(cmd, note):
+    full_h = MARGIN_TOP + H + MARGIN_BOTTOM
     p = [
-        f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}" '
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{full_h}" viewBox="0 0 {W} {full_h}" '
         f'font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="{FONT}">',
         '<defs>',
         f'<linearGradient id="bg" x1="0" y1="0" x2="1" y2="0">'
@@ -67,6 +74,7 @@ def render(cmd, note):
                  f'<animate attributeName="width" values="{widths}" calcMode="discrete" '
                  f'begin="{TYPE_DELAY}s" dur="{type_dur:.2f}s" fill="freeze"/></rect></clipPath>')
     p.append('</defs>')
+    p.append(f'<g transform="translate(0 {MARGIN_TOP})">')
     p += [
         f'<rect width="{W}" height="{H}" rx="{RADIUS}" fill="url(#bg)"/>',
         f'<rect x="0.75" y="0.75" width="{W-1.5}" height="{H-1.5}" rx="{RADIUS}" fill="none" '
@@ -97,7 +105,7 @@ def render(cmd, note):
                  f'dur="{type_dur:.2f}s" fill="freeze"/>'
                  f'<animate attributeName="opacity" values="1;1;0;0" keyTimes="0;0.5;0.5;1" dur="1.1s" '
                  f'begin="{TYPE_DELAY + type_dur:.2f}s" repeatCount="indefinite"/></rect>')
-    p.append('</svg>')
+    p.append('</g></svg>')
     return "".join(p)
 
 
