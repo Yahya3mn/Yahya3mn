@@ -1,0 +1,5 @@
+# local-only: prep_photo.py + make_ascii_svg.py (the daily workflow never runs these)
+-r requirements.txt
+opencv-python-headless>=4.8
+# optional -- prep_photo.py falls back to a backdrop flood fill without it
+rembg>=2.0.50

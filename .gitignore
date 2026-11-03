@@ -1,0 +1,5 @@
+# raw + prepped portrait photos stay local; only the ASCII SVG is published
+source-photo.*
+source-prepped.png
+.venv/
+__pycache__/

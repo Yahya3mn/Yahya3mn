@@ -1,10 +1,17 @@
 <div align="center">
 
-<!-- 3D ascii wordmark: extruded "YAHYA" that wipes in, then rocks on its
-     vertical axis. regenerate with: python scripts/make_wordmark_svg.py -->
+<!-- left: ascii portrait that types itself in row by row
+       (python scripts/prep_photo.py data/source-photo.jpeg && python scripts/make_ascii_svg.py)
+     right: 3D ascii wordmark, extruded "YAHYA" that wipes in, then rocks on its
+       vertical axis (python scripts/make_wordmark_svg.py) -->
 
 <h3>Who am I</h3>
-<img src="./wordmark.svg" width="560" alt="YAHYA — 3D ASCII wordmark" />
+<table>
+  <tr>
+    <td valign="middle"><img src="./yahya-ascii.svg" width="350" alt="Yahya — ASCII portrait" /></td>
+    <td valign="middle"><img src="./wordmark.svg" width="378" alt="YAHYA — 3D ASCII wordmark" /></td>
+  </tr>
+</table>
 
 <br>
 
